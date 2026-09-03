@@ -16,7 +16,7 @@ export default function HomePage() {
   useEffect(() => {
     getTournaments({ status: "upcoming" })
       .then((data) => {
-        setTournaments(data.tournaments || []);
+        setTournaments(data);
         setStatus("ready");
       })
       .catch(() => setStatus("error"));
