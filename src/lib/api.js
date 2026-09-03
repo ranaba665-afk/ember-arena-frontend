@@ -7,7 +7,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "https://ember-arena-backend-1.onrender.com/api",
   headers: { "Content-Type": "application/json" },
 });
 
@@ -43,7 +43,7 @@ export const loginUser = async (payload) => {
 // ---- Tournaments ----
 export const getTournaments = async (params) => {
   const { data } = await api.get("/tournaments", { params });
-  return data.tournaments;
+  return data; // FIX: পুরো data return করতে হবে, data.tournaments না
 };
 
 export const getTournamentById = async (id) => {
@@ -52,9 +52,6 @@ export const getTournamentById = async (id) => {
 };
 
 // ---- Booking / Payment ----
-// Always call this to book a slot, whether the tournament is free
-// or paid. Free tournaments come back confirmed immediately; paid
-// ones come back with a Razorpay order to open Checkout with.
 export const createBookingOrder = async (tournamentId, { teamName, playerIGNs }) => {
   const { data } = await api.post(`/payments/tournaments/${tournamentId}/create-order`, {
     teamName,
@@ -71,7 +68,7 @@ export const cancelBooking = async (bookingId) => {
 // ---- Dashboard ----
 export const getMyBookings = async () => {
   const { data } = await api.get("/bookings/me");
-  return data.bookings; // each booking includes populated tournament + room fields
+  return data.bookings;
 };
 
 // ---- Admin ----
