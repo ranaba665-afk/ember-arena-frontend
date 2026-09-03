@@ -33,20 +33,7 @@ export default function TournamentForm({ initial, onSubmit, submitLabel = "Save"
     setSubmitting(true);
     setError(null);
     try {
-      // The <input type="datetime-local"> gives a naive string like
-      // "2026-09-03T17:35" with no timezone info. Browsers parse that
-      // as the DEVICE's local time, but Node.js on the backend parses
-      // the same naive string as UTC — so without converting it here,
-      // the schedule shifts by whatever the timezone offset is.
-      // new Date(...) below runs in the browser, so it correctly reads
-      // the naive string as local time; .toISOString() then converts
-      // that to the true UTC instant, which is what gets sent and
-      // stored — fixing the mismatch for good.
-      const payload = {
-        ...form,
-        schedule: form.schedule ? new Date(form.schedule).toISOString() : form.schedule,
-      };
-      await onSubmit(payload);
+      await onSubmit(form);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -109,7 +96,7 @@ export default function TournamentForm({ initial, onSubmit, submitLabel = "Save"
             name="totalSlots"
             min={1}
             required
-            disabled={!!initial}
+            disabled={!!initial} // slot total shouldn't change after players have booked
             value={form.totalSlots}
             onChange={handleChange}
             className="mt-1 w-full bg-ash-800 border border-ash-700 px-3 py-2 text-bone-100 focus:outline-none focus:border-ember-500 disabled:opacity-50"
