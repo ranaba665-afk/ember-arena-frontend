@@ -8,7 +8,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getTournamentById, createBookingOrder } from "@/lib/api";
+import { getTournamentById, createBookingOrder, bookWithWallet, getWallet } from "@/lib/api";
 import { useLiveSlots } from "@/hooks/useLiveSlots";
 import { loadRazorpayScript } from "@/hooks/useRazorpayScript";
 import { getSocket } from "@/lib/socket";
@@ -24,9 +24,12 @@ export default function TournamentDetailsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [confirming, setConfirming] = useState(false); // waiting on webhook after UPI payment
   const [error, setError] = useState(null);
+  const [walletBalance, setWalletBalance] = useState(null);
+  const [walletSubmitting, setWalletSubmitting] = useState(false);
 
   useEffect(() => {
     getTournamentById(id).then(setTournament).catch(() => setTournament(null));
+    getWallet().then((w) => setWalletBalance(w.balance)).catch(() => {});
   }, [id]);
 
   // Live slot count — updates in real time as other players book,
@@ -61,6 +64,24 @@ export default function TournamentDetailsPage() {
     } catch (err) {
       setError(err.message); // e.g. "Sorry, all slots are full."
       setSubmitting(false);
+    }
+  };
+
+  const handleBookWithWallet = async () => {
+    setWalletSubmitting(true);
+    setError(null);
+    try {
+      // Unlike the UPI flow, this debits the wallet and confirms the
+      // booking in one atomic step on the backend — no payment
+      // gateway round-trip, so it's immediate.
+      await bookWithWallet(id, {
+        teamName,
+        playerIGNs: playerIGNs.filter(Boolean),
+      });
+      router.push("/dashboard");
+    } catch (err) {
+      setError(err.message); // e.g. "Insufficient wallet balance."
+      setWalletSubmitting(false);
     }
   };
 
@@ -210,7 +231,7 @@ export default function TournamentDetailsPage() {
 
           <button
             type="submit"
-            disabled={isFull || submitting || confirming}
+            disabled={isFull || submitting || confirming || walletSubmitting}
             className="w-full bg-ember-500 hover:bg-ember-600 disabled:bg-ash-700 disabled:text-bone-400 text-ash-950 font-display font-semibold py-3 transition-colors"
           >
             {isFull
@@ -223,6 +244,21 @@ export default function TournamentDetailsPage() {
               ? "Confirm booking"
               : `Pay ৳${tournament.entryFee} via UPI`}
           </button>
+
+          {tournament.entryFee > 0 && !isFull && (
+            <button
+              type="button"
+              onClick={handleBookWithWallet}
+              disabled={submitting || confirming || walletSubmitting || walletBalance < tournament.entryFee}
+              className="mt-3 w-full border border-ash-700 hover:border-ember-500 disabled:opacity-40 text-bone-100 font-display py-3 transition-colors"
+            >
+              {walletSubmitting
+                ? "Booking…"
+                : walletBalance === null
+                ? "Pay from wallet"
+                : `Pay from wallet (৳${walletBalance} available)`}
+            </button>
+          )}
         </form>
       </div>
     </main>
