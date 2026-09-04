@@ -7,6 +7,7 @@
 import { Rajdhani, Inter } from "next/font/google";
 import "./globals.css";
 import AuthGuard from "@/components/AuthGuard";
+import Navbar from "@/components/Navbar";
 
 const rajdhani = Rajdhani({
   subsets: ["latin"],
@@ -28,7 +29,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${rajdhani.variable} ${inter.variable}`}>
-        <AuthGuard>{children}</AuthGuard>
+        <AuthGuard>
+          <Navbar />
+          {children}
+        </AuthGuard>
       </body>
     </html>
   );
