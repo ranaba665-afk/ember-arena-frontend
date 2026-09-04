@@ -10,6 +10,7 @@ import {
   adminUpdateTournament,
   adminSetRoomDetails,
   adminAnnounceResult,
+  adminPayoutPrize,
 } from "@/lib/api";
 
 export default function EditTournamentPage() {
@@ -132,6 +133,8 @@ function RoomDetailsSection({ tournament, onSaved }) {
 function ResultSection({ tournament, onSaved }) {
   const [winnerTeam, setWinnerTeam] = useState(tournament.result?.winnerTeam || "");
   const [saving, setSaving] = useState(false);
+  const [payingOut, setPayingOut] = useState(false);
+  const [payoutError, setPayoutError] = useState(null);
 
   const handleAnnounce = async () => {
     setSaving(true);
@@ -142,6 +145,21 @@ function ResultSection({ tournament, onSaved }) {
       setSaving(false);
     }
   };
+
+  const handlePayout = async () => {
+    setPayingOut(true);
+    setPayoutError(null);
+    try {
+      await adminPayoutPrize(tournament._id);
+      await onSaved();
+    } catch (err) {
+      setPayoutError(err.message);
+    } finally {
+      setPayingOut(false);
+    }
+  };
+
+  const payoutStatus = tournament.result?.payoutStatus;
 
   return (
     <section className="border-t border-ash-700 pt-8">
@@ -169,6 +187,29 @@ function ResultSection({ tournament, onSaved }) {
       >
         {saving ? "Announcing…" : "Announce winner"}
       </button>
+
+      {/* Payout only matters once a winner is announced and there's
+          a prize pool to hand out. */}
+      {payoutStatus === "pending" && (
+        <div className="mt-4">
+          <p className="text-sm text-bone-400 mb-2">
+            Prize of ৳{tournament.prizePool} not yet paid out.
+          </p>
+          {payoutError && <p className="text-sm text-ember-400 mb-2">{payoutError}</p>}
+          <button
+            onClick={handlePayout}
+            disabled={payingOut}
+            className="w-full border border-gold-400 text-gold-400 hover:bg-gold-400/10 disabled:opacity-40 font-display font-semibold py-3"
+          >
+            {payingOut ? "Paying…" : `Pay ৳${tournament.prizePool} to winner's wallet`}
+          </button>
+        </div>
+      )}
+      {payoutStatus === "paid" && (
+        <p className="mt-4 text-sm text-gold-400">
+          ✓ Prize paid out {tournament.result.payoutAt ? `on ${new Date(tournament.result.payoutAt).toLocaleDateString()}` : ""}
+        </p>
+      )}
     </section>
   );
 }
