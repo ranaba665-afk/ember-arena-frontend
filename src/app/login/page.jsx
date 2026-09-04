@@ -21,7 +21,7 @@ export default function LoginPage() {
     setError(null);
     try {
       const user = await login(form.email, form.password);
-      router.push(user.role === "admin" ? "/admin" : "/dashboard");
+      router.push(user.role === "admin" ? "/admin" : "/");
     } catch (err) {
       setError(err.message);
     } finally {
