@@ -95,4 +95,23 @@ export const adminAnnounceResult = async (id, winnerTeam) => {
   return data.tournament;
 };
 
+// ---- Wallet ----
+export const getWallet = async () => {
+  const { data } = await api.get("/wallet");
+  return data; // { balance, transactions }
+};
+
+export const createWalletTopUpOrder = async (amount) => {
+  const { data } = await api.post("/wallet/topup/create-order", { amount });
+  return data;
+};
+
+export const bookWithWallet = async (tournamentId, { teamName, playerIGNs }) => {
+  const { data } = await api.post(`/tournaments/${tournamentId}/book-with-wallet`, {
+    teamName,
+    playerIGNs,
+  });
+  return data;
+};
+
 export default api;
