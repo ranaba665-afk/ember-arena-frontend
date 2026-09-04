@@ -23,7 +23,7 @@ export default function RegisterPage() {
     setError(null);
     try {
       await register(form);
-      router.push("/dashboard");
+      router.push("/");
     } catch (err) {
       setError(err.message);
     } finally {
