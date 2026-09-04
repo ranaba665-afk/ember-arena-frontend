@@ -1,5 +1,12 @@
+// src/app/layout.jsx
+//
+// Required file for the App Router — every page renders inside this.
+// Loads the two fonts referenced in tailwind.config.js
+// (--font-rajdhani for headings, --font-inter for body text).
+
 import { Rajdhani, Inter } from "next/font/google";
 import "./globals.css";
+import AuthGuard from "@/components/AuthGuard";
 
 const rajdhani = Rajdhani({
   subsets: ["latin"],
@@ -20,7 +27,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${rajdhani.variable} ${inter.variable}`}>{children}</body>
+      <body className={`${rajdhani.variable} ${inter.variable}`}>
+        <AuthGuard>{children}</AuthGuard>
+      </body>
     </html>
   );
 }
