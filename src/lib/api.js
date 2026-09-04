@@ -95,6 +95,21 @@ export const adminAnnounceResult = async (id, winnerTeam) => {
   return data.tournament;
 };
 
+export const adminGetTournamentBookings = async (id) => {
+  const { data } = await api.get(`/admin/tournaments/${id}/bookings`);
+  return data.bookings;
+};
+
+export const adminGetOverview = async () => {
+  const { data } = await api.get("/admin/overview");
+  return data;
+};
+
+export const adminPayoutPrize = async (id) => {
+  const { data } = await api.post(`/admin/tournaments/${id}/payout`);
+  return data.tournament;
+};
+
 // ---- Wallet ----
 export const getWallet = async () => {
   const { data } = await api.get("/wallet");
